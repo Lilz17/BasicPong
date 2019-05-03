@@ -17,16 +17,29 @@ class Brick{
 		this.sizex = sizex ; 
 		this.sizey = sizey ; 
 		this.color = color ;
+		this.rightPressed = false ;
+		this.leftPressed = false ; 
+		this.dx = 7 ; 
 	}
 
 	draw(){
 		// beginPath just clears everything and restarts 
+		if(this.rightPressed && this.x + this.sizex < canvas.width){
+			console.log("Entered here is true") ;
+			this.x += this.dx ;
+		}else if(this.leftPressed && this.x > 0){
+			this.x -= this.dx ; 
+		}
+
 		c.beginPath() ;
 		c.fillStyle = this.color ;
 		c.rect(this.x, this.y, this.sizex, this.sizey) ;
 		c.fill() ; 
 	}
+
 }
+
+var paddle = new Brick(canv.width / 2 - 40 , canv.height - 40, 80 , 40, "green") ; 
 
 class Ball{
 
@@ -35,8 +48,8 @@ class Ball{
 		this.y = y ; 
 		this.radius = radius ; 
 		this.color = color ;
-		this.dx = 2 ;
-		this.dy = -2 ; 
+		this.dx = 7;
+		this.dy = -7 ; 
 	}
 
 	draw(){
@@ -50,8 +63,18 @@ class Ball{
 		this.y += this.dy ; 
 		if(this.x + this.radius > canvas.width  || this.x - this.radius < 0){
 			this.dx *= -1 ;
-		}else if(this.y + this.radius > canvas.height || this.y - this.radius < 0){
+		}else if( this.y - this.radius < 0 ){
 			this.dy *= -1 ; 
+		}
+
+		// Collision Detection 
+		if(this.y + this.radius > paddle.y && this.x > paddle.x && this.x < paddle.x + paddle.sizex){
+			console.log("hit paddle")
+			this.dy *= -1 ;
+		}
+
+		if(this.y  + this.dy > canvas.height){
+			document.location.reload() ;
 		}
 	}
 
@@ -59,11 +82,29 @@ class Ball{
 
 var ball = new Ball(canv.width / 2, canv.height - 78, 30, "blue") ;
 // var paddle = new Brick(canv.width / 2, canv.height, 50, 40, "green") ; 
-
-var paddle = new Brick(canv.width / 2 - 45 , canv.height - 40, 80 , 40, "green") ; 
 // c.fillRect(0, 0, canv.width, canv.height) ; 
 // c.clearRect(100, 100, 200, 300) ;
 
+
+function keyDownHandler(e){
+		if(e.keyCode == 39 ){
+			 paddle.rightPressed = true ;
+		}else if(e.keyCode == 37){
+			paddle.leftPressed = true ;
+
+		}
+	}
+
+function keyUpHandler(e){
+		if(e.keyCode == 39 ){
+			paddle.rightPressed = false ;
+		}else if(e.keyCode == 37){
+			paddle.leftPressed = false ;
+		}
+	}
+
+window.addEventListener('keydown', keyDownHandler) ;
+window.addEventListener('keyup', keyUpHandler) ;
 
 function animate(){
 	requestAnimationFrame(animate)
@@ -72,6 +113,8 @@ function animate(){
 	// Check the above link to understand why I made a call to beginPath()
 	c.beginPath() ;
 	ball.draw() ;
+	// paddle.rightPressed = true ; 
+	// paddle.leftPressed = true ; 
 	paddle.draw() ;
 	ball.update() ;
 }
